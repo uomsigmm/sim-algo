@@ -24,8 +24,10 @@ add image below
 - The Run Command should have the absolute path to the .out file to avoid any unwanted errors
 
 ```sh
-# you can edit the ff.c to the c file you want to test and keep the others as is
-gcc test.c -o ff.out
+# in the build command,
+# you can edit the ff.c to the .c file
+# you want to test and keep the others as is
+gcc ffv2.c -o ff.out
 ```
 
 > [!TIP]
