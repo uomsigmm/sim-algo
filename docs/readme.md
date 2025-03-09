@@ -17,7 +17,7 @@ Currently we are using the [mms simulator](https://github.com/mackorone/mms) by 
 4. Click any of the two buttons next to Mouse in the Simulator and add the relevant algorithm you want to test.
 add image below
 
-![|400](./docs/mac-mms-c.png)
+![](./mac-mms-c.png)
 
 - Enter the algorithm directory you want to test in the Directory field
 - Build command uses gcc for the ff.c algorithm
@@ -26,15 +26,15 @@ add image below
 ```sh
 # you can edit the ff.c to the c file you want to test and keep the others as is
 gcc test.c -o ff.out
-
-# if you don't want to bother with installing gcc 
-# and have added zig in your path
-# just replace gcc with zig cc
-zig cc test.c -o ff.out
-
 ```
 
-
+> [!TIP]
+>
+>If you don't want to bother with the hell of installing gcc/msvc on Windows try to add [zig](https://ziglang.org/download/) in your path and just replace `gcc` with `zig cc` in the command
+>
+>```sh
+>zig cc test.c -o ff.out
+>```
 
 ## Project Structure
 
@@ -43,8 +43,9 @@ sim-algo/
 ├── algo/          # Algorithms directory
 │   └── ff/        # Flood-Fill Algorithms in testing
 │       ├── api.h  # mms simulator api interface in c
-│       ├── ff.c   # Currently testing Flood-Fill Algorithm
-│       └── ffv1.c # Flood-Fill Implementaion V1
+│       ├── ffv1.c # Goal Search Only
+│       ├── ffv2.c # Search Run, Speed Run, Edge Cases Present
+│       └── ff.c   # Currently testing Flood-Fill Algorithm
 ├── license        # License information
 └── readme.md      # This file
 ```
