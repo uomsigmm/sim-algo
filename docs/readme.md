@@ -27,7 +27,7 @@ add image below
 # in the build command,
 # you can edit the ff.c to the .c file
 # you want to test and keep the others as is
-gcc ffv2.c -o ff.out
+gcc ffv3.c -o ff.out
 ```
 
 > [!TIP]
@@ -47,7 +47,7 @@ sim-algo/
 │       ├── api.h  # mms simulator api interface in c
 │       ├── ffv1.c # Goal Search Only
 │       ├── ffv2.c # Search Run, Speed Run, Edge Cases Present
-│       └── ff.c   # Currently testing Flood-Fill Algorithm
+│       └── ffv3.c # Search Run, Speed Run All Done
 ├── license        # License information
 └── readme.md      # This file
 ```

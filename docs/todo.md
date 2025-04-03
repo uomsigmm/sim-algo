@@ -7,3 +7,4 @@
 - [ ] integration with stm32hal
 - [ ] style guide
 - [ ] avoid c++ footguns
+- [ ] look into c11 c23 advantages

@@ -1,9 +1,12 @@
+/// ffv1.c
+/// this file contains the first version of the flood fill algorithm
+/// it's a simple implementation of the search run only.
+/// it successfully solves the maze but doesn't have the speed run part
+
 #include "api.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-// TODO: Search Run
 
 #define MAZE_WIDTH 16
 #define MAZE_HEIGHT 16
