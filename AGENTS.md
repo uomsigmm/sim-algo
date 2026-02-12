@@ -14,6 +14,8 @@ Micromouse maze-solving algorithms using flood fill, tested via the
 | file | purpose |
 |------|---------|
 | `src/api.h` | MMS simulator C API (single-header, included by each version) |
+| `src/log.h` | Conditional logging API (LOG, LOG_ERROR, LOG_PHASE, LOG_STEP) |
+| `src/ffv0.c` | Clean room: ffv3 architecture + enhanced log.h logging |
 | `src/ffv1.c` | Baseline: search-only flood fill, stops at goal |
 | `src/ffv2.c` | Full algorithm: search + return + speed run, exploration bonus |
 | `src/ffv3.c` | Refactored v2: structs (MouseState, Maze, Point), direction enum, multi-goal BFS |
@@ -24,12 +26,14 @@ Micromouse maze-solving algorithms using flood fill, tested via the
 ## Build
 
 ```sh
-make all      # release build (-O2), produces ffv1.out, ffv2.out, ffv3.out
-make ffv1     # build only ffv1.out
-make ffv2     # build only ffv2.out  
-make ffv3     # build only ffv3.out
-make debug    # debug build (-O0 -g -DDEBUG)
-make clean    # remove artifacts
+make all              # release build with logging enabled by default (-O2 -DLOG_ENABLED)
+make LOG_ENABLED=false all  # release build without logging (-O2)
+make ffv0             # build only ffv0.out (with logging)
+make ffv1             # build only ffv1.out (with logging)
+make ffv2             # build only ffv2.out (with logging)
+make ffv3             # build only ffv3.out (with logging)
+make debug            # debug build with logging (-O0 -g -DDEBUG -DLOG_ENABLED)
+make clean            # remove artifacts
 ```
 
 ## Testing
@@ -46,7 +50,7 @@ is verified by successful maze completion across different maze configurations.
 - Each version is a standalone .c file that includes api.h
 - 16x16 grid, all data is stack-allocated (no malloc)
 - BFS-based flood fill with multi-source seeding for 2x2 center goal
-- State machine: SEARCH_MODE -> RETURN_MODE -> SPEED_MODE (v2/v3)
+- State machine: SEARCH_MODE -> RETURN_MODE -> SPEED_MODE (v2/v3/v0)
 - Walls are permanent once detected (never cleared)
 
 ## Style
