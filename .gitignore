@@ -1,3 +1,8 @@
-**/**.out
+*.out
+*.o
+*.dSYM/
 mms.app
-
+zalgo/
+c99/
+tmp/
+assets/mazes/

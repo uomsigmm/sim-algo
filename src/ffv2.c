@@ -24,17 +24,17 @@
 #define SPEED_MODE 2
 
 // current position and orientation
-int posX = 0;
-int posY = 0;
-int direction = NORTH;
-int currentMode = SEARCH_MODE;
+int  posX = 0;
+int  posY = 0;
+int  direction = NORTH;
+int  currentMode = SEARCH_MODE;
 bool goalFound = false;
 
 // maze state
-int distances[MAZE_WIDTH][MAZE_HEIGHT]; // distance values
-bool walls[MAZE_WIDTH][MAZE_HEIGHT][4]; // wall information: [x][y][direction]
-bool visited[MAZE_WIDTH][MAZE_HEIGHT];  // visited cells
-int fastestPath[MAZE_WIDTH * MAZE_HEIGHT]
+int  distances[MAZE_WIDTH][MAZE_HEIGHT]; // distance values
+bool walls[MAZE_WIDTH][MAZE_HEIGHT][4];  // wall information: [x][y][direction]
+bool visited[MAZE_WIDTH][MAZE_HEIGHT];   // visited cells
+int  fastestPath[MAZE_WIDTH * MAZE_HEIGHT]
                [2]; // stores the shortest path coordinates
 int pathLength = 0;
 
@@ -58,7 +58,7 @@ void verifyShortestPath(void);
 void followShortestPath(void);
 void recomputePathIfNeeded(void);
 
-int main(int argc, char *argv[]) {
+int main(void) {
   logMessage("Starting maze solver");
 
   // initialize maze data
@@ -131,12 +131,10 @@ int main(int argc, char *argv[]) {
 
     // simple debug message to track progress
     char buffer[80];
-    sprintf(buffer, "now at (%d,%d) facing %d, mode: %d", posX, posY, direction,
-            currentMode);
+    snprintf(buffer, sizeof(buffer), "now at (%d,%d) facing %d, mode: %d", posX,
+             posY, direction, currentMode);
     logMessage(buffer);
   }
-
-  return 0;
 }
 
 void initializeMaze(void) {
@@ -179,8 +177,9 @@ void updateWalls(void) {
 
   // Log detected walls for debugging
   char buffer[80];
-  sprintf(buffer, "Detecting walls at (%d,%d): front=%d, right=%d, left=%d",
-          posX, posY, frontWall, rightWall, leftWall);
+  snprintf(buffer, sizeof(buffer),
+           "Detecting walls at (%d,%d): front=%d, right=%d, left=%d", posX,
+           posY, frontWall, rightWall, leftWall);
   logMessage(buffer);
 
   // update walls for current cell
@@ -193,15 +192,6 @@ void updateWalls(void) {
     if (nx >= 0 && nx < MAZE_WIDTH && ny >= 0 && ny < MAZE_HEIGHT) {
       walls[nx][ny][(direction + 2) % 4] = true;
     }
-  } else {
-    // Explicitly mark that there is no wall
-    walls[posX][posY][direction] = false;
-
-    int nx = posX + dx[direction];
-    int ny = posY + dy[direction];
-    if (nx >= 0 && nx < MAZE_WIDTH && ny >= 0 && ny < MAZE_HEIGHT) {
-      walls[nx][ny][(direction + 2) % 4] = false;
-    }
   }
 
   if (rightWall) {
@@ -212,16 +202,6 @@ void updateWalls(void) {
     int ny = posY + dy[rightDir];
     if (nx >= 0 && nx < MAZE_WIDTH && ny >= 0 && ny < MAZE_HEIGHT) {
       walls[nx][ny][(rightDir + 2) % 4] = true;
-    }
-  } else {
-    // Explicitly mark that there is no wall
-    int rightDir = (direction + 1) % 4;
-    walls[posX][posY][rightDir] = false;
-
-    int nx = posX + dx[rightDir];
-    int ny = posY + dy[rightDir];
-    if (nx >= 0 && nx < MAZE_WIDTH && ny >= 0 && ny < MAZE_HEIGHT) {
-      walls[nx][ny][(rightDir + 2) % 4] = false;
     }
   }
 
@@ -234,16 +214,6 @@ void updateWalls(void) {
     if (nx >= 0 && nx < MAZE_WIDTH && ny >= 0 && ny < MAZE_HEIGHT) {
       walls[nx][ny][(leftDir + 2) % 4] = true;
     }
-  } else {
-    // Explicitly mark that there is no wall
-    int leftDir = (direction + 3) % 4;
-    walls[posX][posY][leftDir] = false;
-
-    int nx = posX + dx[leftDir];
-    int ny = posY + dy[leftDir];
-    if (nx >= 0 && nx < MAZE_WIDTH && ny >= 0 && ny < MAZE_HEIGHT) {
-      walls[nx][ny][(leftDir + 2) % 4] = false;
-    }
   }
 }
 
@@ -255,8 +225,8 @@ void floodFill(int targetX, int targetY) {
   } Cell;
 
   Cell queue[MAZE_WIDTH * MAZE_HEIGHT];
-  int qFront = 0;
-  int qBack = 0;
+  int  qFront = 0;
+  int  qBack = 0;
 
   // reset distances to a high value
   for (int x = 0; x < MAZE_WIDTH; x++) {
@@ -274,9 +244,9 @@ void floodFill(int targetX, int targetY) {
   // BFS to calculate distances
   while (qFront < qBack) {
     Cell current = queue[qFront++];
-    int x = current.x;
-    int y = current.y;
-    int d = distances[x][y];
+    int  x = current.x;
+    int  y = current.y;
+    int  d = distances[x][y];
 
     // try all four neighboring cells
     for (int dir = 0; dir < 4; dir++) {
@@ -302,45 +272,58 @@ void floodFill(int targetX, int targetY) {
   }
 }
 
-// Flood fill with goal as the target
+// Flood fill with goal as the target (seeds all 4 goal cells)
 void floodFillToGoal(void) {
-  // Use the closest goal cell as the target
-  int goalDistances[4];
-  goalDistances[0] = abs(posX - GOAL_X1) + abs(posY - GOAL_Y1);
-  goalDistances[1] = abs(posX - GOAL_X1) + abs(posY - GOAL_Y2);
-  goalDistances[2] = abs(posX - GOAL_X2) + abs(posY - GOAL_Y1);
-  goalDistances[3] = abs(posX - GOAL_X2) + abs(posY - GOAL_Y2);
+  typedef struct {
+    int x, y;
+  } Cell;
 
-  int minDist = goalDistances[0];
-  int minIdx = 0;
-  for (int i = 1; i < 4; i++) {
-    if (goalDistances[i] < minDist) {
-      minDist = goalDistances[i];
-      minIdx = i;
+  Cell queue[MAZE_WIDTH * MAZE_HEIGHT];
+  int  qFront = 0;
+  int  qBack = 0;
+
+  // reset distances to a high value
+  for (int x = 0; x < MAZE_WIDTH; x++) {
+    for (int y = 0; y < MAZE_HEIGHT; y++) {
+      distances[x][y] = MAZE_WIDTH * MAZE_HEIGHT;
     }
   }
 
-  int targetX, targetY;
-  switch (minIdx) {
-  case 0:
-    targetX = GOAL_X1;
-    targetY = GOAL_Y1;
-    break;
-  case 1:
-    targetX = GOAL_X1;
-    targetY = GOAL_Y2;
-    break;
-  case 2:
-    targetX = GOAL_X2;
-    targetY = GOAL_Y1;
-    break;
-  case 3:
-    targetX = GOAL_X2;
-    targetY = GOAL_Y2;
-    break;
+  // seed all 4 goal cells into the BFS queue
+  for (int gx = GOAL_X1; gx <= GOAL_X2; gx++) {
+    for (int gy = GOAL_Y1; gy <= GOAL_Y2; gy++) {
+      distances[gx][gy] = 0;
+      queue[qBack].x = gx;
+      queue[qBack].y = gy;
+      qBack++;
+    }
   }
 
-  floodFill(targetX, targetY);
+  // BFS to calculate distances
+  while (qFront < qBack) {
+    Cell current = queue[qFront++];
+    int  x = current.x;
+    int  y = current.y;
+    int  d = distances[x][y];
+
+    for (int dir = 0; dir < 4; dir++) {
+      if (walls[x][y][dir])
+        continue;
+
+      int nx = x + dx[dir];
+      int ny = y + dy[dir];
+
+      if (nx < 0 || nx >= MAZE_WIDTH || ny < 0 || ny >= MAZE_HEIGHT)
+        continue;
+
+      if (distances[nx][ny] > d + 1) {
+        distances[nx][ny] = d + 1;
+        queue[qBack].x = nx;
+        queue[qBack].y = ny;
+        qBack++;
+      }
+    }
+  }
 }
 
 // Flood fill with start as the target
@@ -353,7 +336,9 @@ bool isAtGoal(void) {
          (posY == GOAL_Y1 || posY == GOAL_Y2);
 }
 
-bool isAtStart(void) { return posX == 0 && posY == 0; }
+bool isAtStart(void) {
+  return posX == 0 && posY == 0;
+}
 
 void moveToNextCell(void) {
   // find the direction with the minimum distance
@@ -508,18 +493,21 @@ void computeShortestPath(void) {
     fastestPath[pathLength][1] = y;
     pathLength++;
 
-    sprintf(buffer, "Path point %d: (%d,%d)", pathLength - 1, x, y);
+    snprintf(buffer, sizeof(buffer), "Path point %d: (%d,%d)", pathLength - 1,
+             x, y);
     logMessage(buffer);
   }
 
-  sprintf(buffer, "Shortest path length: %d steps", pathLength - 1);
+  snprintf(buffer, sizeof(buffer), "Shortest path length: %d steps",
+           pathLength - 1);
   logMessage(buffer);
 }
 
-void verifyShortestPath() {
+void verifyShortestPath(void) {
   logMessage("Verifying shortest path for consistency...");
 
-  int x = 0, y = 0;
+  char buffer[80];
+  int  x = 0, y = 0;
   for (int i = 1; i < pathLength; i++) {
     int targetX = fastestPath[i][0];
     int targetY = fastestPath[i][1];
@@ -536,22 +524,20 @@ void verifyShortestPath() {
     }
 
     if (moveDir == -1) {
-      char buffer[80];
-      sprintf(buffer,
-              "ERROR: Path verification failed! Can't find direction from "
-              "(%d,%d) to (%d,%d)",
-              x, y, targetX, targetY);
+      snprintf(buffer, sizeof(buffer),
+               "ERROR: Path verification failed! Can't find direction from "
+               "(%d,%d) to (%d,%d)",
+               x, y, targetX, targetY);
       logMessage(buffer);
       return;
     }
 
     // Check if there's a wall in this direction
     if (walls[x][y][moveDir]) {
-      char buffer[80];
-      sprintf(
-          buffer,
-          "ERROR: Wall detected in path! Cannot move from (%d,%d) to (%d,%d)",
-          x, y, targetX, targetY);
+      snprintf(buffer, sizeof(buffer),
+               "ERROR: Wall detected in path! Cannot move from (%d,%d) to "
+               "(%d,%d)",
+               x, y, targetX, targetY);
       logMessage(buffer);
       return;
     }
@@ -614,9 +600,10 @@ void followShortestPath(void) {
   updateWalls();
 
   char buffer[80];
-  sprintf(buffer, "Real wall state at start: N=%d, E=%d, S=%d, W=%d",
-          walls[0][0][NORTH], walls[0][0][EAST], walls[0][0][SOUTH],
-          walls[0][0][WEST]);
+  snprintf(buffer, sizeof(buffer),
+           "Real wall state at start: N=%d, E=%d, S=%d, W=%d",
+           walls[0][0][NORTH], walls[0][0][EAST], walls[0][0][SOUTH],
+           walls[0][0][WEST]);
   logMessage(buffer);
 
   // Log the start of the speed run
@@ -639,21 +626,18 @@ void followShortestPath(void) {
     }
 
     if (moveDir == -1) {
-      char buffer[80];
-      sprintf(buffer,
-              "ERROR: Invalid path point! Cannot find direction from (%d,%d) "
-              "to (%d,%d)",
-              posX, posY, targetX, targetY);
+      snprintf(buffer, sizeof(buffer),
+               "ERROR: Invalid path point! Cannot find direction from "
+               "(%d,%d) to (%d,%d)",
+               posX, posY, targetX, targetY);
       logMessage(buffer);
       return;
     }
 
     // Debug the planned move
-    char buffer[80];
-    sprintf(buffer,
-            "Moving from (%d,%d) to (%d,%d), need to face direction: %d, "
-            "currently facing: %d",
-            posX, posY, targetX, targetY, moveDir, direction);
+    snprintf(buffer, sizeof(buffer),
+             "Moving from (%d,%d) to (%d,%d), need dir: %d, cur: %d", posX,
+             posY, targetX, targetY, moveDir, direction);
     logMessage(buffer);
 
     // Turn to face the right direction
@@ -680,10 +664,9 @@ void followShortestPath(void) {
     // Move forward
     logMessage("Moving forward");
     if (!API_moveForward()) {
-      // Add more debug info
-      sprintf(buffer,
-              "ERROR: Failed to move during speed run! At (%d,%d), facing %d",
-              posX, posY, direction);
+      snprintf(buffer, sizeof(buffer),
+               "ERROR: Failed to move! At (%d,%d), facing %d", posX, posY,
+               direction);
       logMessage(buffer);
 
       // Check if there's a wall in our way
@@ -705,8 +688,8 @@ void followShortestPath(void) {
     updateDisplay();
 
     // Debug message
-    sprintf(buffer, "Speed run: now at (%d,%d) facing %d", posX, posY,
-            direction);
+    snprintf(buffer, sizeof(buffer), "Speed run: now at (%d,%d) facing %d",
+             posX, posY, direction);
     logMessage(buffer);
   }
 
@@ -721,7 +704,7 @@ void updateDisplay(void) {
     for (int y = 0; y < MAZE_HEIGHT; y++) {
       // set the text to show distance
       char buffer[8];
-      sprintf(buffer, "%d", distances[x][y]);
+      snprintf(buffer, sizeof(buffer), "%d", distances[x][y]);
       API_setText(x, y, buffer);
 
       // set cell color

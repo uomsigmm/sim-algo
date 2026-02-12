@@ -29,9 +29,9 @@ int posY = 0;
 int direction = NORTH;
 
 // maze state
-int distances[MAZE_WIDTH][MAZE_HEIGHT]; // distance values
-bool walls[MAZE_WIDTH][MAZE_HEIGHT][4]; // wall information: [x][y][direction]
-bool visited[MAZE_WIDTH][MAZE_HEIGHT];  // visited cells
+int  distances[MAZE_WIDTH][MAZE_HEIGHT]; // distance values
+bool walls[MAZE_WIDTH][MAZE_HEIGHT][4];  // wall information: [x][y][direction]
+bool visited[MAZE_WIDTH][MAZE_HEIGHT];   // visited cells
 
 // direction deltas
 const int dx[4] = {0, 1, 0, -1}; // NORTH, EAST, SOUTH, WEST
@@ -46,7 +46,7 @@ void moveToNextCell(void);
 void updateDisplay(void);
 void logMessage(const char *msg);
 
-int main(int argc, char *argv[]) {
+int main(void) {
   logMessage("Starting maze solver");
 
   // initialize maze data
@@ -78,7 +78,8 @@ int main(int argc, char *argv[]) {
 
     // simple debug message to track progress
     char buffer[50];
-    sprintf(buffer, "now at (%d,%d) facing %d", posX, posY, direction);
+    snprintf(buffer, sizeof(buffer), "now at (%d,%d) facing %d", posX, posY,
+             direction);
     logMessage(buffer);
   }
 
@@ -175,8 +176,8 @@ void floodFill(void) {
   } Cell;
 
   Cell queue[MAZE_WIDTH * MAZE_HEIGHT];
-  int qFront = 0;
-  int qBack = 0;
+  int  qFront = 0;
+  int  qBack = 0;
 
   // reset distances to a high value except for goal
   for (int x = 0; x < MAZE_WIDTH; x++) {
@@ -196,9 +197,9 @@ void floodFill(void) {
   // bfs to calculate distances
   while (qFront < qBack) {
     Cell current = queue[qFront++];
-    int x = current.x;
-    int y = current.y;
-    int d = distances[x][y];
+    int  x = current.x;
+    int  y = current.y;
+    int  d = distances[x][y];
 
     // try all four neighboring cells
     for (int dir = 0; dir < 4; dir++) {
@@ -306,7 +307,7 @@ void updateDisplay(void) {
     for (int y = 0; y < MAZE_HEIGHT; y++) {
       // set the text to show distance
       char buffer[8];
-      sprintf(buffer, "%d", distances[x][y]);
+      snprintf(buffer, sizeof(buffer), "%d", distances[x][y]);
       API_setText(x, y, buffer);
 
       // set cell color

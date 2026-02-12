@@ -9,7 +9,10 @@ int getInteger(char *command) {
   printf("%s\n", command);
   fflush(stdout);
   char response[BUFFER_SIZE];
-  fgets(response, BUFFER_SIZE, stdin);
+  if (fgets(response, BUFFER_SIZE, stdin) == NULL) {
+    fprintf(stderr, "ERROR: fgets failed in getInteger for '%s'\n", command);
+    exit(1);
+  }
   int value = atoi(response);
   return value;
 }
@@ -18,7 +21,10 @@ int getBoolean(char *command) {
   printf("%s\n", command);
   fflush(stdout);
   char response[BUFFER_SIZE];
-  fgets(response, BUFFER_SIZE, stdin);
+  if (fgets(response, BUFFER_SIZE, stdin) == NULL) {
+    fprintf(stderr, "ERROR: fgets failed in getBoolean for '%s'\n", command);
+    exit(1);
+  }
   int value = (strcmp(response, "true\n") == 0);
   return value;
 }
@@ -27,26 +33,53 @@ int getAck(char *command) {
   printf("%s\n", command);
   fflush(stdout);
   char response[BUFFER_SIZE];
-  fgets(response, BUFFER_SIZE, stdin);
+  if (fgets(response, BUFFER_SIZE, stdin) == NULL) {
+    fprintf(stderr, "ERROR: fgets failed in getAck for '%s'\n", command);
+    exit(1);
+  }
   int success = (strcmp(response, "ack\n") == 0);
   return success;
 }
 
-int API_mazeWidth() { return getInteger("mazeWidth"); }
+int API_mazeWidth(void) {
+  return getInteger("mazeWidth");
+}
 
-int API_mazeHeight() { return getInteger("mazeHeight"); }
+int API_mazeHeight(void) {
+  return getInteger("mazeHeight");
+}
 
-int API_wallFront() { return getBoolean("wallFront"); }
+int API_wallFront(void) {
+  return getBoolean("wallFront");
+}
 
-int API_wallRight() { return getBoolean("wallRight"); }
+int API_wallRight(void) {
+  return getBoolean("wallRight");
+}
 
-int API_wallLeft() { return getBoolean("wallLeft"); }
+int API_wallLeft(void) {
+  return getBoolean("wallLeft");
+}
 
-int API_moveForward() { return getAck("moveForward"); }
+int API_moveForward(void) {
+  return getAck("moveForward");
+}
 
-void API_turnRight() { getAck("turnRight"); }
+void API_turnRight(void) {
+  getAck("turnRight");
+}
 
-void API_turnLeft() { getAck("turnLeft"); }
+void API_turnLeft(void) {
+  getAck("turnLeft");
+}
+
+void API_turnRight45(void) {
+  getAck("turnRight45");
+}
+
+void API_turnLeft45(void) {
+  getAck("turnLeft45");
+}
 
 void API_setWall(int x, int y, char direction) {
   printf("setWall %d %d %c\n", x, y, direction);
@@ -68,7 +101,7 @@ void API_clearColor(int x, int y) {
   fflush(stdout);
 }
 
-void API_clearAllColor() {
+void API_clearAllColor(void) {
   printf("clearAllColor\n");
   fflush(stdout);
 }
@@ -83,11 +116,15 @@ void API_clearText(int x, int y) {
   fflush(stdout);
 }
 
-void API_clearAllText() {
+void API_clearAllText(void) {
   printf("clearAllText\n");
   fflush(stdout);
 }
 
-int API_wasReset() { return getBoolean("wasReset"); }
+int API_wasReset(void) {
+  return getBoolean("wasReset");
+}
 
-void API_ackReset() { getAck("ackReset"); }
+void API_ackReset(void) {
+  getAck("ackReset");
+}
